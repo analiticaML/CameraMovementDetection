@@ -10,13 +10,13 @@ class CameraService:
 
     #Constructor
     def __init__(self):
-        #Variable con el streaming de video
-        self.camera=cv2.VideoCapture("rtsp://admin:admin@192.168.1.80:1935")
         self.count=0
 
 
     #Configuración inicial de la recepción del streaming
-    def openCamera(self,width, height):
+    def openCamera(self,width, height, rtsp):
+        #Variable con el streaming de video
+        self.camera=cv2.VideoCapture(rtsp)
         
         print("Esperando conexión con la cámara")
 
