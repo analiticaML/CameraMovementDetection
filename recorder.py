@@ -31,7 +31,7 @@ class Recorder:
         cameraservice=CameraService()
         #cameraservice2 = CameraService()
         #Se establece conexión del streaming
-        cameraservice.openCamera(1280, 1080, "rtsp://192.168.1.16:554/live1s1.sdp")
+        cameraservice.openCamera(944, 1080, "rtsp://192.168.1.16:554/live1s1.sdp")
         #cameraservice2.openCamera(640, 480, "rtsp://admin:admin@192.168.1.101:1935")
         #Se obtiene la imagen actual en escala de grises
         previousGrayFrame = cameraservice.getGrayScaleFrame(cameraservice.getFrame())
