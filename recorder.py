@@ -43,61 +43,71 @@ class Recorder:
 
         #Ciclo infinito para la captura de cuadros
         while (True):
-            #Nuevo cuadro
-            newFrame = cameraservice.getFrame()
-            #newFrame2 = cameraservice2.getFrame()
-            cuenta = cuenta + 1
+            try:
 
-            #Se salta el análisis de 5 imágenes
-            if (cuenta > 50):
+                #Nuevo cuadro
+                newFrame = cameraservice.getFrame()
+                #newFrame2 = cameraservice2.getFrame()
+                cuenta = cuenta + 1
 
-                #Cambia  a escala de grises el nuevo cuadro
-                newFrameGrayScale = cameraservice.getGrayScaleFrame(newFrame)
-                #newFrameGrayScale2 = cameraservice2.getGrayScaleFrame(newFrame2)
+                #Se salta el análisis de 5 imágenes
+                if (cuenta > 50):
 
-                #Se llama a método para detectar movimiento
-                if (cameraservice.detectMovement(previousGrayFrame, newFrameGrayScale, 30000)):
-                    print("Motion detected!!!")
+                    #Cambia  a escala de grises el nuevo cuadro
+                    newFrameGrayScale = cameraservice.getGrayScaleFrame(newFrame)
+                    #newFrameGrayScale2 = cameraservice2.getGrayScaleFrame(newFrame2)
 
-                    #Se guarda la fecha de hoy y se convierte a string 
-                    now = datetime.datetime.now()
-                    date=str(now.year)+str(now.month)+str(now.day)+str(now.hour)+str(now.minute)+str(now.second)+str(now.microsecond)
-                    #Se gurda la imagen el directorio local con nombre de la imagen como la fecha y hora de la captura
-                    path = self.path + "/" + date + ".jpg"
-                    data = {}
-                    data["path"] = path
-                    print("Data: " + str(data["path"]))
-                    imageservice.saveImage(newFrame, path)
+                    #Se llama a método para detectar movimiento
+                    if (cameraservice.detectMovement(previousGrayFrame, newFrameGrayScale, 50000)):
+                        print("Motion detected!!!")
 
-                    #Se crea objeto tipo Rabbitmq
-                    rabbitmqservice=RabbitmqService()
-                    #Se envía mensaje a la cola del servicio de mensajería
-                    rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
+                        #Se guarda la fecha de hoy y se convierte a string 
+                        now = datetime.datetime.now()
+                        date=str(now.year)+str(now.month)+str(now.day)+str(now.hour)+str(now.minute)+str(now.second)+str(now.microsecond)
+                        #Se gurda la imagen el directorio local con nombre de la imagen como la fecha y hora de la captura
+                        path = self.path + "/" + date + ".jpg"
+                        data = {}
+                        data["path"] = path
+                        print("Data: " + str(data["path"]))
+                        imageservice.saveImage(newFrame, path)
+
+                        #Se crea objeto tipo Rabbitmq
+                        rabbitmqservice=RabbitmqService()
+                        #Se envía mensaje a la cola del servicio de mensajería
+                        rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
+
+
                     
+                    #Se llama a método para detectar movimiento
+                    # if (cameraservice2.detectMovement(previousGrayFrame2, newFrameGrayScale2, 5000)):
+                    #     print("Motion detected camera2!!!")
+
+                    #     Se guarda la fecha de hoy y se convierte a string 
+                    #     now = datetime.datetime.now()
+                    #     date=str(now.year)+str(now.month)+str(now.day)+str(now.hour)+str(now.minute)+str(now.second)+str(now.microsecond)
+                    #     Se gurda la imagen el directorio local con nombre de la imagen como la fecha y hora de la captura
+                    #     path = self.path + "/" + date + "cam2"+".jpg"
+                    #     data = {}
+                    #     data["path"] = path
+                    #     print("Data: " + str(data["path"]))
+                    #     imageservice.saveImage(newFrame2, path)
+
+                    #     Se crea objeto tipo Rabbitmq
+                    #     rabbitmqservice=RabbitmqService()
+                    #     Se envía mensaje a la cola del servicio de mensajería
+                    #     rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
+                        
+                    #     Se actualiza el cuadro anterior con el cuadro nuevo
+                    #     previousGrayFrame2 = newFrameGrayScale2
+
+                    #Se reinicia contador
+                    cuenta=0
                     #Se actualiza el cuadro anterior con el cuadro nuevo
-                previousGrayFrame = newFrameGrayScale
-                
-                #Se llama a método para detectar movimiento
-                # if (cameraservice2.detectMovement(previousGrayFrame2, newFrameGrayScale2, 5000)):
-                #     print("Motion detected camera2!!!")
-
-                #     Se guarda la fecha de hoy y se convierte a string 
-                #     now = datetime.datetime.now()
-                #     date=str(now.year)+str(now.month)+str(now.day)+str(now.hour)+str(now.minute)+str(now.second)+str(now.microsecond)
-                #     Se gurda la imagen el directorio local con nombre de la imagen como la fecha y hora de la captura
-                #     path = self.path + "/" + date + "cam2"+".jpg"
-                #     data = {}
-                #     data["path"] = path
-                #     print("Data: " + str(data["path"]))
-                #     imageservice.saveImage(newFrame2, path)
-
-                #     Se crea objeto tipo Rabbitmq
-                #     rabbitmqservice=RabbitmqService()
-                #     Se envía mensaje a la cola del servicio de mensajería
-                #     rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
-                    
-                #     Se actualiza el cuadro anterior con el cuadro nuevo
-                #     previousGrayFrame2 = newFrameGrayScale2
-
-                #Se reinicia contador
+                    previousGrayFrame = newFrameGrayScale
+            except:
+                cameraservice.openCamera(944, 1080, "rtsp://192.168.1.16:554/live1s1.sdp")
+                #cameraservice2.openCamera(640, 480, "rtsp://admin:admin@192.168.1.101:1935")
+                #Se obtiene la imagen actual en escala de grises
                 cuenta=0
+
+                    

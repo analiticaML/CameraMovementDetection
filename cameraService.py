@@ -86,6 +86,7 @@ class CameraService:
             
             #Se compara el área del contorno con el nivel umbral
             #Si es mayor se aumenta el contador
+            print(cv2.contourArea(framesDifferenceContour))
             if cv2.contourArea(framesDifferenceContour) > limit:
                 self.count=self.count+1
                 print(self.count)
