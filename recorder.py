@@ -31,11 +31,14 @@ class Recorder:
 
         #Se crea objeto tipo CameraService
         cameraservice=CameraService()
+        cameraservice2 = CameraService()
         #Se establece conexión del streaming
-        cameraservice.openCamera(640, 480)
+        cameraservice.openCamera(800, 1080, "rtsp://192.168.1.16:554/live1s1.sdp")
+        cameraservice2.openCamera(640, 480, "rtsp://admin:admin@192.168.1.101:1935")
 
         #Se obtiene la imagen actual en escala de grises
         previousGrayFrame = cameraservice.getGrayScaleFrame(cameraservice.getFrame())
+        previousGrayFrame2 = cameraservice2.getGrayScaleFrame(cameraservice2.getFrame())
 
         #Se esteblece un contador para disminuir el número de imágenes a las cuales
         #se les hace el análisis. 
@@ -46,18 +49,21 @@ class Recorder:
 
         #Ciclo infinito para la captura de cuadros
         while (True):
+            #try:
             #Nuevo cuadro
             newFrame = cameraservice.getFrame()
+            newFrame2 = cameraservice2.getFrame()
             cuenta = cuenta + 1
 
             #Se salta el análisis de 5 imágenes
-            if (cuenta > 15):
+            if (cuenta > 30):
 
                 #Cambia  a escala de grises el nuevo cuadro
                 newFrameGrayScale = cameraservice.getGrayScaleFrame(newFrame)
+                newFrameGrayScale2 = cameraservice2.getGrayScaleFrame(newFrame2)
 
                 #Se llama a método para detectar movimiento
-                if (cameraservice.detectMovement(previousGrayFrame, newFrameGrayScale, 5000)):
+                if (cameraservice.detectMovement(previousGrayFrame, newFrameGrayScale, 50000)):
                     print("Motion detected!!!")
 
                     #Se guarda la fecha de hoy y se convierte a string 
@@ -73,27 +79,59 @@ class Recorder:
                     #Se crea objeto tipo Rabbitmq
                     rabbitmqservice=RabbitmqService()
 
-                    # facedetector = FaceDetector()
-                    # persondetector = PersonDetector()
 
                     objetos= persondetector.detectObjects(path)
                     caras = facedetector.facedetector(path)
 
-                    if objetos:
+                    if 0 in objetos:
                         print("Se detectó a una persona")                         
                             
                         if caras.size != 0:
                             print("Se detectó una cara")
 
-                            imageservice.saveImage(newFrame, "C:/Users/user/Documents/sentImages"+ "/" + date + ".jpg")
+                            imageservice.saveImage(newFrame, "/home/analitica2/Documentos/RecuadrosPersonas"+ "/" + date + ".jpg")
                             #Se envía mensaje a la cola del servicio de mensajería
                             rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
                 
+                    #Se llama a método para detectar movimiento
+                if (cameraservice2.detectMovement(previousGrayFrame2, newFrameGrayScale2, 5000)):
+                    print("Motion detected camera2!!!")
+
+                    #Se guarda la fecha de hoy y se convierte a string 
+                    now = datetime.datetime.now()
+                    date=str(now.year)+str(now.month)+str(now.day)+str(now.hour)+str(now.minute)+str(now.second)+str(now.microsecond)
+                    #Se gurda la imagen el directorio local con nombre de la imagen como la fecha y hora de la captura
+                    path = self.path + "/" + date + "cam2"+".jpg"
+                    data = {}
+                    data["path"] = path
+                    print("Data: " + str(data["path"]))
+                    imageservice.saveImage(newFrame2, path)
+
+                    #Se crea objeto tipo Rabbitmq
+                    rabbitmqservice=RabbitmqService()
+
+
+                    objetos= persondetector.detectObjects(path)
+                    caras = facedetector.facedetector(path)
+                    
+                    if 0 in objetos:
+                        print("Se detectó a una persona")                         
+                            
+                        if caras.size != 0:
+                            print("Se detectó una cara")
+
+                            imageservice.saveImage(newFrame, "/home/analitica2/Documentos/RecuadrosPersonas"+ "/" + date + ".jpg")
+                            #Se envía mensaje a la cola del servicio de mensajería
+                            rabbitmqservice.publish(json.dumps(data), "captured-image-queue", self.mqHost)
+                    
+                #Se actualiza el cuadro anterior con el cuadro nuevo
+                previousGrayFrame2 = newFrameGrayScale2
                 #Se actualiza el cuadro anterior con el cuadro nuevo
                 previousGrayFrame = newFrameGrayScale
 
-                #Tiempo que se espera entre capturas (en milisegundos)
-                cv2.waitKey(100)
-
                 #Se reinicia contador
                 cuenta=0
+            #except:
+               # cameraservice.openCamera(800, 1080, "rtsp://192.168.1.16:554/live1s1.sdp")
+                #cameraservice.openCamera(640, 480, "rtsp://admin:admin@192.168.1.101:1935")
+                #cuenta=0
