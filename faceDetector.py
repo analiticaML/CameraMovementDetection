@@ -5,7 +5,6 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 from PIL import Image
 import cv2
-import matplotlib.pyplot as plt
 
 class FaceDetector: 
 
@@ -15,8 +14,8 @@ class FaceDetector:
         #Detector MTCNN
         self.mtcnn = MTCNN(
                     select_largest = True,
-                    min_face_size  = 15,
-                    thresholds     = [0.8, 0.75, 0.75],
+                    min_face_size  = 30,
+                    thresholds     = [0.8, 0.8, 0.8],
                     post_process   = False,
                     image_size     = 160
                 )
